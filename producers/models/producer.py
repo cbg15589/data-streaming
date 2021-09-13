@@ -37,8 +37,8 @@ class Producer:
         #
         #
         self.broker_properties = {
-            'BROKER_URL': "PLAINTEXT://localhost:9092",
-            'SCHEMA_REGISTRY_URL': "http://localhost:8081"
+            'bootstrap.servers': "PLAINTEXT://localhost:9092",
+            'schema.registry.url': "http://localhost:8081"
         }
 
         # If the topic does not already exist, try to create it
@@ -51,6 +51,13 @@ class Producer:
                                      default_key_schema=self.value_schema,
                                      default_value_schema=self.value_schema)
 
+    @staticmethod
+    def topic_exists(client, topic_name):
+        """Checks if the given topic exists"""
+        topics = client.list_topics().topics
+
+        return topics.get(topic_name) is not None
+
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         #
@@ -58,7 +65,13 @@ class Producer:
         # TODO: Write code that creates the topic for this producer if it does not already exist on
         # the Kafka Broker.
         #
-        client = AdminClient({"bootstrap.servers": self.broker_properties['BROKER_URL']})
+        client = AdminClient({"bootstrap.servers": self.broker_properties['bootstrap.servers']})
+        exists = self.topic_exists(client, self.topic_name)
+
+        if exists:
+            print(f"Topic {self.topic_name} already exists, skipping creation")
+            return
+
         futures = client.create_topics(
             [NewTopic(topic=self.topic_name,
                       num_partitions=self.num_partitions,
