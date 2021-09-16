@@ -38,7 +38,7 @@ class Weather(Producer):
         #
         #
         super().__init__(
-            "weather_info",
+            "org.chicago.cta.weather.v1",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
             num_partitions=1,
@@ -92,12 +92,12 @@ class Weather(Producer):
             "key_schema": json.dumps(Weather.key_schema),
             "records": [{
                        "value": {"temperature": self.temp,
-                                 "status": self.status},
+                                 "status": self.status.name},
                 "key": {"timestamp": self.time_millis()}
                    }]
         }
         resp = requests.post(
-            f"{Weather.rest_proxy_url}/topics/weather_info",
+            f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
             data=json.dumps(data),
             headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
         )

@@ -37,7 +37,7 @@ class Turnstile(Producer):
         # replicas
         #
         #
-        topic_name = f"{station_name}_turnstile"
+        topic_name = f"org.chicago.cta.station.turnstiles"
         super().__init__(
             topic_name,
             key_schema=Turnstile.key_schema,
@@ -60,10 +60,12 @@ class Turnstile(Producer):
         #
         self.producer.produce(
             topic=self.topic_name,
-            key={"timestamp": timestamp},
+            key_schema=self.key_schema,
+            key={"timestamp": self.time_millis()},
+            value_schema=self.value_schema,
             value={
                 "station_id": self.station.station_id,
                 "station_name": self.station.name,
-                "line": self.station.color
+                "line": self.station.color.name
             },
         )

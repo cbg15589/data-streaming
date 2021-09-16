@@ -38,7 +38,8 @@ class Producer:
         #
         self.broker_properties = {
             'bootstrap.servers': "PLAINTEXT://localhost:9092",
-            'schema.registry.url': "http://localhost:8081"
+            'schema.registry.url': "http://localhost:8081",
+            "group.id": f"{self.topic_name}",
         }
 
         # If the topic does not already exist, try to create it

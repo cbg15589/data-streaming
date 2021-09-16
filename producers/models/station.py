@@ -7,7 +7,6 @@ from confluent_kafka import avro
 from models import Turnstile
 from models.producer import Producer
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -25,10 +24,10 @@ class Station(Producer):
         self.name = name
         station_name = (
             self.name.lower()
-            .replace("/", "_and_")
-            .replace(" ", "_")
-            .replace("-", "_")
-            .replace("'", "")
+                .replace("/", "_and_")
+                .replace(" ", "_")
+                .replace("-", "_")
+                .replace("'", "")
         )
 
         #
@@ -37,7 +36,7 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = f"{station_name}_arrivals"
+        topic_name = f"org.chicago.cta.station.arrivals.{station_name}"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
@@ -62,22 +61,21 @@ class Station(Producer):
         #
         #
         # logger.info("arrival kafka integration incomplete - skipping")
-        try:
-            self.producer.produce(
-               topic=self.topic_name,
-               key={"timestamp": self.time_millis()},
-               value={
-                   "station_id": self.station_id,
-                   "train_id": train.train_id,
-                   "direction": direction,
-                   "line": self.color,
-                   "train_status": train.status,
-                   "prev_station_id": prev_station_id,
-                   "prev_direction": prev_direction
-               },
-            )
-        except Exception as e:
-            print(e)
+        self.producer.produce(
+            topic=self.topic_name,
+            key_schema=self.key_schema,
+            key={"timestamp": self.time_millis()},
+            value_schema=self.value_schema,
+            value={
+                "station_id": self.station_id,
+                "train_id": train.train_id,
+                "direction": direction,
+                "line": self.color.name,
+                "train_status": train.status.name,
+                "prev_station_id": prev_station_id,
+                "prev_direction": prev_direction
+            },
+        )
 
     def __str__(self):
         return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(
