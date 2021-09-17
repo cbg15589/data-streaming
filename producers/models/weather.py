@@ -4,13 +4,11 @@ import json
 import logging
 from pathlib import Path
 import random
-import urllib.parse
 import time
 
 import requests
 
 from models.producer import Producer
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +29,6 @@ class Weather(Producer):
     summer_months = set((6, 7, 8))
 
     def __init__(self, month):
-        #
-        #
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
-        # replicas
-        #
-        #
         super().__init__(
             "org.chicago.cta.weather.v1",
             key_schema=Weather.key_schema,
@@ -56,9 +48,6 @@ class Weather(Producer):
             with open(f"{Path(__file__).parents[0]}/schemas/weather_key.json") as f:
                 Weather.key_schema = json.load(f)
 
-        #
-        # TODO: Define this value schema in `schemas/weather_value.json
-        #
         if Weather.value_schema is None:
             with open(f"{Path(__file__).parents[0]}/schemas/weather_value.json") as f:
                 Weather.value_schema = json.load(f)
@@ -91,10 +80,10 @@ class Weather(Producer):
             "value_schema": json.dumps(Weather.value_schema),
             "key_schema": json.dumps(Weather.key_schema),
             "records": [{
-                       "value": {"temperature": self.temp,
-                                 "status": self.status.name},
+                "value": {"temperature": self.temp,
+                          "status": self.status.name},
                 "key": {"timestamp": self.time_millis()}
-                   }]
+            }]
         }
         resp = requests.post(
             f"{Weather.rest_proxy_url}/topics/{self.topic_name}",
