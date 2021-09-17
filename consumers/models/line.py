@@ -56,19 +56,15 @@ class Line:
 
     def process_message(self, message):
         """Given a kafka message, extract data"""
-        # TODO: Based on the message topic, call the appropriate handler.
-        # Set the conditional correctly to the stations Faust Table
         if message.topic() == 'org.chicago.cta.stations.table.v1':
             try:
                 value = json.loads(message.value())
                 self._handle_station(value)
-                # logging.info(f'Processed message for topic: {message.topic()}')
             except Exception as e:
                 logger.fatal("bad station? %s, %s", value, e)
         # Set the conditional to the arrival topic
         elif 'arrivals' in message.topic():
             self._handle_arrival(message)
-            # logging.info(f'Processed message for topic: {message.topic()}')
         # Set the conditional to the KSQL Turnstile Summary Topic
         elif message.topic() == 'TURNSTILE_SUMMARY':
             json_data = json.loads(message.value())
@@ -78,7 +74,6 @@ class Line:
                 logger.debug("unable to handle message due to missing station")
                 return
             station.process_message(json_data)
-            # logging.info(f'Processed message for topic: {message.topic()}')
         else:
             logger.debug(
                 "unable to find handler for message from topic %s", message.topic
