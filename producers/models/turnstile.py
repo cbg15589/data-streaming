@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 class Turnstile(Producer):
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/turnstile_key.json")
 
-    #
-    # TODO: Define this value schema in `schemas/turnstile_value.json, then uncomment the below
-    #
     value_schema = avro.load(
        f"{Path(__file__).parents[0]}/schemas/turnstile_value.json"
     )
@@ -31,12 +28,6 @@ class Turnstile(Producer):
             .replace("'", "")
         )
 
-        #
-        #
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
-        # replicas
-        #
-        #
         topic_name = f"org.chicago.cta.station.turnstiles"
         super().__init__(
             topic_name,
@@ -51,21 +42,16 @@ class Turnstile(Producer):
     def run(self, timestamp, time_step):
         """Simulates riders entering through the turnstile."""
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
-        # logger.integrationfo("turnstile kafka integration incomplete - skipping")
-        #
-        #
-        # TODO: Complete this function by emitting a message to the turnstile topic for the number
-        # of entries that were calculated
-        #
-        #
-        self.producer.produce(
-            topic=self.topic_name,
-            key_schema=self.key_schema,
-            key={"timestamp": self.time_millis()},
-            value_schema=self.value_schema,
-            value={
-                "station_id": self.station.station_id,
-                "station_name": self.station.name,
-                "line": self.station.color.name
-            },
-        )
+
+        for i in range(num_entries):
+            self.producer.produce(
+                topic=self.topic_name,
+                key_schema=self.key_schema,
+                key={"timestamp": self.time_millis()},
+                value_schema=self.value_schema,
+                value={
+                    "station_id": self.station.station_id,
+                    "station_name": self.station.name,
+                    "line": self.station.color.name
+                },
+            )
